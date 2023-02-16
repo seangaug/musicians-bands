@@ -26,3 +26,32 @@ describe('Band and Musician Models', () => {
         expect(testMusician.instrument).toBe('piano');
     })
 })
+
+//Part 2 - Add a test to account for the association
+
+describe('association tests', () => {
+    beforeAll(async () => {
+        await sequelize.sync({ force: true});
+    })
+
+    test('add multiple musicians to a band', async () => {
+        
+        // create a band:
+        const newBand = await Band.create({ name: 'The Band' });
+        
+        // create musicians:
+        const musician1 = await Musician.create({ name: "Levon Helm"})
+        const musician2 = await Musician.create({ name: "Robbie Robertson"})
+
+        // adds both musicians to newBand
+        await newBand.addMusicians([musician1, musician2]);
+
+        // fetch musicians associated with newBand: 
+        const musicians = await newBand.getMusicians();
+
+        // Test expected result:
+        expect(musicians.length).toBe(2);
+        expect(musicians[0].name).toBe("Levon Helm");
+        expect(musicians[1].name).toBe("Robbie Robertson");
+    })
+})
