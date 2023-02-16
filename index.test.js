@@ -1,5 +1,5 @@
 const {sequelize} = require('./db');
-const {Band, Musician} = require('./index')
+const {Band, Musician, Song} = require('./index')
 
 describe('Band and Musician Models', () => {
     /**
@@ -54,4 +54,34 @@ describe('association tests', () => {
         expect(musicians[0].name).toBe("Levon Helm");
         expect(musicians[1].name).toBe("Robbie Robertson");
     })
+
+    // Part 3 - Add another test to account for the association between Band and Song
+
+    test('should create a band and add multiple songs to it, and multiple bands can have the same song', async () => {
+        
+        // create bands and songs
+        const band1 = await Band.create({ name: 'The Beatles', genre: 'Rock' });
+        const band2 = await Band.create({ name: 'Led Zeppelin', genre: 'Rock' });
+        const song1 = await Song.create({ title: 'Let It Be', year: 1970 });
+        const song2 = await Song.create({ title: 'Stairway to Heaven', year: 1971 });
+        const song3 = await Song.create({ title: 'Bohemian Rhapsody', year: 1975 });
+    
+        await band1.addSongs([song1, song3]);
+        await band2.addSongs([song2, song3]);
+    
+        const songs1 = await band1.getSongs();
+        expect(songs1).toHaveLength(2);
+        expect(songs1.map(s => s.title)).toContain('Let It Be');
+        expect(songs1.map(s => s.title)).toContain('Bohemian Rhapsody');
+    
+        const songs2 = await band2.getSongs();
+        expect(songs2).toHaveLength(2);
+        expect(songs2.map(s => s.title)).toContain('Stairway to Heaven');
+        expect(songs2.map(s => s.title)).toContain('Bohemian Rhapsody');
+    
+        const bands3 = await song3.getBands();
+        expect(bands3).toHaveLength(2);
+        expect(bands3.map(b => b.name)).toContain('The Beatles');
+        expect(bands3.map(b => b.name)).toContain('Led Zeppelin');
+      });
 })
